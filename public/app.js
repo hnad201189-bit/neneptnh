@@ -98,6 +98,25 @@
     return (student && student.group && student.group.name) || "—";
   }
 
+  const GROUP_COLOR_VAR = { "Tổ 1": "--to1", "Tổ 2": "--to2", "Tổ 3": "--to3", "Tổ 4": "--to4" };
+  function initialsOf(fullName) {
+    const parts = (fullName || "?").trim().split(/\s+/);
+    return (parts[parts.length - 1][0] || "?").toUpperCase();
+  }
+  // Avatar tô màu theo Tổ để dễ nhận diện nhanh học sinh cùng tổ trong danh sách dài.
+  function avatarHtml(fullName, group) {
+    const colorVar = GROUP_COLOR_VAR[group] || "--text-muted";
+    return `<span class="stu-avatar" style="background:${cssVar(colorVar)}">${esc(initialsOf(fullName))}</span>`;
+  }
+  // violationCount === 0 kéo theo điểm luôn = 100 (không có gì để trừ) — huy hiệu riêng cho tháng "sạch" hoàn toàn.
+  function achievementBadge(c) {
+    if (!c || c.violationCount !== 0) return "";
+    return `<span class="stu-badge" title="Không vi phạm trong tháng này">🏅</span>`;
+  }
+  function scoreSpan(score) {
+    return score === 100 ? `<span class="score-perfect">${score}</span>` : score;
+  }
+
   /* ================= TOOLTIP ================= */
   const tip = $("#chart-tooltip");
   document.addEventListener("mouseover", (e) => {
@@ -395,7 +414,7 @@
           .map(
             (x) => `
       <div class="attn-row">
-        <div><div class="attn-name">${esc(x.student.fullName)}</div><div class="attn-class">${x.student.group || "—"} · ${x.violationCount} lượt vi phạm</div></div>
+        <div style="display:flex;align-items:center;gap:8px;">${avatarHtml(x.student.fullName, x.student.group)}<div><div class="attn-name">${esc(x.student.fullName)}</div><div class="attn-class">${x.student.group || "—"} · ${x.violationCount} lượt vi phạm</div></div></div>
         <div style="text-align:right;"><div class="attn-score tabular" style="color:${cssVar(XL_COLOR_VAR[x.classification])}">${x.score}</div><span class="pill ${XL_PILL[x.classification]}">${XL_LABEL[x.classification]}</span></div>
       </div>`,
           )
@@ -419,8 +438,8 @@
         const c = scoreForStudent(s.id) || { score: 100, classification: "tot", violationCount: 0 };
         const detail = expandedStudent === s.id ? renderStudentDetail(s, c) : "";
         return `<tr class="clickable" data-student="${s.id}">
-          <td class="cell-name">${esc(s.fullName)}</td><td class="cell-muted">${groupName(s)}</td>
-          <td class="tabular" style="font-weight:700;color:${cssVar(XL_COLOR_VAR[c.classification])}">${c.score}</td>
+          <td class="cell-name"><div class="name-cell">${avatarHtml(s.fullName, groupName(s))}<span>${esc(s.fullName)}</span>${achievementBadge(c)}</div></td><td class="cell-muted">${groupName(s)}</td>
+          <td class="tabular" style="font-weight:700;color:${cssVar(XL_COLOR_VAR[c.classification])}">${scoreSpan(c.score)}</td>
           <td><span class="pill ${XL_PILL[c.classification]}">${XL_LABEL[c.classification]}</span></td>
           <td class="tabular cell-muted">${c.violationCount}</td>
         </tr>${detail ? `<tr class="accordion-row"><td colspan="5">${detail}</td></tr>` : ""}`;
@@ -554,8 +573,8 @@
       <tbody>${
         rows
           .map(
-            (r) => `<tr><td class="cell-name">${esc(r.student.fullName)}</td><td class="cell-muted">${r.student.group || "—"}</td>
-        <td class="tabular" style="font-weight:700;color:${cssVar(XL_COLOR_VAR[r.classification])}">${r.score}</td>
+            (r) => `<tr><td class="cell-name"><div class="name-cell">${avatarHtml(r.student.fullName, r.student.group)}<span>${esc(r.student.fullName)}</span>${achievementBadge(r)}</div></td><td class="cell-muted">${r.student.group || "—"}</td>
+        <td class="tabular" style="font-weight:700;color:${cssVar(XL_COLOR_VAR[r.classification])}">${scoreSpan(r.score)}</td>
         <td><span class="pill ${XL_PILL[r.classification]}">${XL_LABEL[r.classification]}</span></td>
         <td class="tabular cell-muted">${r.violationCount}</td><td class="tabular cell-muted">${r.meritCount}</td></tr>`,
           )

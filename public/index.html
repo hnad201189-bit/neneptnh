@@ -22,6 +22,7 @@
     --gold:#E3A008; --silver:#9AA5B8; --bronze:#C97A3D;
     --sidebar-bg:#2454C7; --sidebar-bg-2:#3565DE; --sidebar-text:#EEF3FF;
     --sidebar-text-muted:#B9CBF7; --sidebar-line:rgba(255,255,255,.14);
+    --to1:#14b8a6; --to2:#8b5cf6; --to3:#f472b6; --to4:#fb923c;
     --font-display:'Baloo 2','Be Vietnam Pro',Georgia,sans-serif;
     --font-body:'Be Vietnam Pro','Segoe UI',Roboto,sans-serif;
   }
@@ -35,6 +36,7 @@
       --accent:#FF7A5C; --accent-soft:#3A2419; --focus:#7CA1F0;
       --shadow-card:0 1px 2px rgba(0,0,0,.45), 0 1px 0 rgba(0,0,0,.3);
       --series-blue:#3987e5; --gold:#F0B72D; --silver:#98A4BE; --bronze:#D68A54;
+      --to1:#2dd4bf; --to2:#a78bfa; --to3:#f9a8d4; --to4:#fdba74;
     }
   }
   :root[data-theme="dark"]{
@@ -46,6 +48,7 @@
     --accent:#FF7A5C; --accent-soft:#3A2419; --focus:#7CA1F0;
     --shadow-card:0 1px 2px rgba(0,0,0,.45), 0 1px 0 rgba(0,0,0,.3);
     --series-blue:#3987e5; --gold:#F0B72D; --silver:#98A4BE; --bronze:#D68A54;
+    --to1:#2dd4bf; --to2:#a78bfa; --to3:#f9a8d4; --to4:#fdba74;
   }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--paper); color:var(--text-primary); font-family:var(--font-body); font-size:15px; line-height:1.5;}
@@ -161,6 +164,19 @@
   table.data tbody tr:hover{background:var(--surface-2);}
   table.data tbody tr.clickable{cursor:pointer;}
   .cell-muted{color:var(--text-muted);} .cell-name{font-weight:600;}
+  .name-cell{display:flex; align-items:center; gap:8px;}
+  .stu-avatar{width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:.68rem; color:#fff; flex:none; letter-spacing:.2px;}
+  .stu-badge{font-size:.86rem; line-height:1; cursor:default;}
+  .score-perfect{position:relative; display:inline-block; text-shadow:0 0 10px color-mix(in srgb, var(--gold) 65%, transparent);}
+  .score-perfect::after{content:"✨"; margin-left:3px; font-size:.72em;}
+  @media (prefers-reduced-motion: no-preference){
+    .score-perfect{animation:scoreGlow 2.4s ease-in-out infinite;}
+  }
+  @keyframes scoreGlow{
+    0%,100%{text-shadow:0 0 6px color-mix(in srgb, var(--gold) 45%, transparent);}
+    50%{text-shadow:0 0 14px color-mix(in srgb, var(--gold) 85%, transparent);}
+  }
 
   .pill{display:inline-flex; align-items:center; gap:5px; padding:3px 9px 3px 7px; border-radius:99px; font-size:.72rem; font-weight:600; white-space:nowrap; border:none; cursor:default;}
   .pill::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor;}
