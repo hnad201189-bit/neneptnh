@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -20,7 +21,7 @@ export class MeritTypesService {
   }
 
   create(schoolId: string, dto: CreateMeritTypeDto) {
-    return this.repo.save(this.repo.create({ ...dto, schoolId }));
+    return this.repo.save(this.repo.create({ id: randomUUID(), ...dto, schoolId }));
   }
 
   async deactivate(id: string, schoolId: string) {

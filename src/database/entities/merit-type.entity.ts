@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { School } from "./school.entity";
 
+// id là varchar (không ép kiểu uuid) vì danh mục gốc dùng id ngắn dễ đọc như "mt1".
 @Entity("merit_types")
 export class MeritType {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryColumn("varchar")
   id!: string;
 
   @Column()

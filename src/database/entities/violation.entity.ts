@@ -42,7 +42,7 @@ export class Violation {
   @Column({ type: "varchar", nullable: true })
   processedByUserId?: string | null;
 
-  @Column({ type: "datetime", nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   processedAt?: Date | null;
 
   @CreateDateColumn()

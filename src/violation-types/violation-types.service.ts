@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -20,7 +21,7 @@ export class ViolationTypesService {
   }
 
   create(schoolId: string, dto: CreateViolationTypeDto) {
-    const entity = this.repo.create({ ...dto, schoolId });
+    const entity = this.repo.create({ id: randomUUID(), ...dto, schoolId });
     return this.repo.save(entity);
   }
 
