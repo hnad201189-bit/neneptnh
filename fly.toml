@@ -1,0 +1,32 @@
+# Cấu hình triển khai Fly.io cho "Nề Nếp Số".
+# app = tên nội bộ trên Fly (khác tên miền neneptnh.online — tên miền sẽ trỏ vào đây
+# bằng bản ghi CNAME sau khi deploy lần đầu, xem README phần "Đưa lên internet thật").
+app = "nenepso-tnh"
+primary_region = "sin" # Singapore — gần Việt Nam nhất trong các vùng Fly hỗ trợ
+
+[build]
+
+[env]
+PORT = "3000"
+DATABASE_PATH = "/data/dev.db"
+COOKIE_SECURE = "true"
+JWT_ACCESS_TTL = "15m"
+JWT_REFRESH_TTL = "7d"
+# JWT_ACCESS_SECRET và JWT_REFRESH_SECRET KHÔNG đặt ở đây (file này commit vào git) —
+# đặt bằng lệnh `fly secrets set`, xem README.
+
+# Ổ đĩa bền vững cho SQLite — dữ liệu không mất khi deploy lại hoặc máy khởi động lại.
+[[mounts]]
+source = "nenepso_data"
+destination = "/data"
+
+[http_service]
+internal_port = 3000
+force_https = true
+auto_stop_machines = true # tiết kiệm chi phí: tắt khi không ai dùng
+auto_start_machines = true # tự bật lại trong vài giây khi có request đầu tiên
+min_machines_running = 0
+
+[[vm]]
+size = "shared-cpu-1x"
+memory = "512mb"

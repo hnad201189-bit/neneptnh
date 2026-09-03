@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.log
+dev.db
+dev.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+cookies*.txt
+.DS_Store
+Thumbs.db

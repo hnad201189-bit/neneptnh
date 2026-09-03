@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: nen-nep-so
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: DATABASE_PATH
+        value: "dev.db"
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: JWT_ACCESS_TTL
+        value: "15m"
+      - key: JWT_REFRESH_TTL
+        value: "7d"
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
