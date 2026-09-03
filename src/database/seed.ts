@@ -3,7 +3,7 @@ import "dotenv/config";
 import * as bcrypt from "bcryptjs";
 import { AppDataSource } from "./data-source";
 import { Permission } from "../common/permissions";
-import { Severity, ViolationStatus } from "../common/severity.enum";
+import { Severity } from "../common/severity.enum";
 import { School } from "./entities/school.entity";
 import { Class } from "./entities/class.entity";
 import { Group } from "./entities/group.entity";
@@ -11,8 +11,6 @@ import { Student } from "./entities/student.entity";
 import { User } from "./entities/user.entity";
 import { ViolationType } from "./entities/violation-type.entity";
 import { MeritType } from "./entities/merit-type.entity";
-import { Violation } from "./entities/violation.entity";
-import { Merit } from "./entities/merit.entity";
 
 const BCRYPT_ROUNDS = 10;
 
@@ -100,46 +98,6 @@ const MERIT_TYPES: Array<[string, string, number]> = [
   ["mt5", "Có tiến bộ vượt bậc trong rèn luyện", 4],
 ];
 
-const SAMPLE_VIOLATIONS: Array<[string, string, string, ViolationStatus, string]> = [
-  ["TNH25260415", "vt1", "2026-08-25", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260415", "vt3", "2026-08-27", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260418", "vt6", "2026-08-26", ViolationStatus.DA_XU_LY, "Dùng điện thoại giờ Toán"],
-  ["TNH25260418", "vt9", "2026-09-02", ViolationStatus.DA_BAO_PH, "Xô xát tại sân trường"],
-  ["TNH25260418", "vt8", "2026-08-31", ViolationStatus.DA_BAO_PH, ""],
-  ["TNH25260418", "vt4", "2026-08-25", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260410", "vt2", "2026-08-24", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260423", "vt4", "2026-08-28", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260428", "vt5", "2026-08-25", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260428", "vt5", "2026-09-01", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260433", "vt1", "2026-08-26", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260438", "vt7", "2026-08-27", ViolationStatus.DA_XU_LY, "Không đội mũ bảo hiểm"],
-  ["TNH25260442", "vt10", "2026-09-01", ViolationStatus.DA_BAO_PH, "Sử dụng tài liệu trong KT 15 phút"],
-  ["TNH25260442", "vt6", "2026-08-29", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260444", "vt9", "2026-08-30", ViolationStatus.DA_BAO_PH, "Xô xát với bạn cùng lớp"],
-  ["TNH25260444", "vt8", "2026-09-02", ViolationStatus.DA_BAO_PH, ""],
-  ["TNH25260444", "vt1", "2026-08-25", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260444", "vt6", "2026-08-24", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260451", "vt3", "2026-08-31", ViolationStatus.DA_XU_LY, ""],
-  ["TNH25260413", "vt2", "2026-08-24", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260456", "vt6", "2026-09-01", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260456", "vt5", "2026-08-28", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260410", "vt1", "2026-09-02", ViolationStatus.CHO_XU_LY, ""],
-  ["TNH25260425", "vt7", "2026-08-26", ViolationStatus.DA_XU_LY, ""],
-];
-
-const SAMPLE_MERITS: Array<[string, string, string, string]> = [
-  ["TNH25260409", "mt2", "2026-08-29", ""],
-  ["TNH25260417", "mt1", "2026-08-30", ""],
-  ["TNH25260424", "mt3", "2026-08-26", ""],
-  ["TNH25260440", "mt4", "2026-09-01", "Trả lại ví nhặt được ở căn tin"],
-  ["TNH25260431", "mt2", "2026-08-27", ""],
-  ["TNH25260421", "mt5", "2026-09-03", ""],
-  ["TNH25260433", "mt3", "2026-08-25", ""],
-  ["TNH25260449", "mt1", "2026-08-31", ""],
-  ["TNH25260457", "mt2", "2026-08-28", ""],
-  ["TNH25260430", "mt5", "2026-09-03", "Không tái phạm sau nhắc nhở"],
-];
-
 async function main() {
   console.log("Đang seed dữ liệu Trường THPT Trần Nguyên Hãn — lớp 11B10 …");
   await AppDataSource.initialize();
@@ -151,8 +109,6 @@ async function main() {
   const userRepo = AppDataSource.getRepository(User);
   const violationTypeRepo = AppDataSource.getRepository(ViolationType);
   const meritTypeRepo = AppDataSource.getRepository(MeritType);
-  const violationRepo = AppDataSource.getRepository(Violation);
-  const meritRepo = AppDataSource.getRepository(Merit);
 
   const schoolId = "school-tnh";
   await schoolRepo.upsert(
@@ -233,39 +189,9 @@ async function main() {
     permissions: [],
   });
 
-  // 2 tài khoản ví dụ — minh hoạ cách Admin cấp quyền linh hoạt (không còn "vai trò" cố định).
-  // Admin có thể sửa/xoá/tạo thêm ở màn "Quản lý tài khoản" bất kỳ lúc nào, không cần sửa code.
-  await upsertUser({
-    email: "canbo@thpttnh.edu.vn",
-    fullName: "Tài khoản cán bộ (ví dụ — không giới hạn tổ)",
-    password: "CanBo@123",
-    isAdmin: false,
-    permissions: ["record_violations", "record_merits", "manage_status"],
-    groupId: null,
-  });
-  await upsertUser({
-    email: "totruong1@thpttnh.edu.vn",
-    fullName: "Tài khoản Tổ 1 (ví dụ — giới hạn theo tổ)",
-    password: "ToTruong@123",
-    isAdmin: false,
-    permissions: ["record_violations", "record_merits"],
-    groupId: groupIdByName["Tổ 1"],
-  });
-
-  for (let i = 0; i < SAMPLE_VIOLATIONS.length; i++) {
-    const [studentId, typeId, occurredAt, status, note] = SAMPLE_VIOLATIONS[i];
-    await violationRepo.upsert(
-      { id: `seed-v${i + 1}`, studentId, typeId, occurredAt, status, note: note || undefined, recordedByUserId: admin.id },
-      ["id"],
-    );
-  }
-  for (let i = 0; i < SAMPLE_MERITS.length; i++) {
-    const [studentId, typeId, occurredAt, note] = SAMPLE_MERITS[i];
-    await meritRepo.upsert(
-      { id: `seed-m${i + 1}`, studentId, typeId, occurredAt, note: note || undefined, recordedByUserId: admin.id },
-      ["id"],
-    );
-  }
+  // KHÔNG seed tài khoản ví dụ hay vi phạm/khen thưởng mẫu nữa — Admin tự tạo tài
+  // khoản qua "Quản lý tài khoản" và lớp bắt đầu nhập dữ liệu thật từ đầu, không lẫn
+  // dữ liệu demo. (Nếu muốn dữ liệu mẫu để thử nghiệm cục bộ, xem lịch sử git.)
 
   console.log("Xong. Xem README.md để lấy thông tin đăng nhập.");
   console.log({ admin: admin.email, students: STUDENTS.length, violationTypes: VIOLATION_TYPES.length });

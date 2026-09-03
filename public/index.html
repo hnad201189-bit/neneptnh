@@ -106,6 +106,7 @@
   .topbar h1{font-size:1.55rem;}
   .topbar .sub{color:var(--text-secondary); font-size:.85rem; margin-top:3px;}
   .topbar-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .month-select{padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-weight:600; color:var(--text-primary); cursor:pointer;}
   .search{position:relative;}
   .search input{padding:8px 12px 8px 32px; border:1px solid var(--line); border-radius:8px; background:var(--surface); width:210px;}
   .search svg{position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--text-muted);}
@@ -302,11 +303,11 @@
         <div class="sub" id="view-sub">Đang tải…</div>
       </div>
       <div class="topbar-actions">
+        <select id="month-select" class="month-select" data-tip="Điểm hạnh kiểm tính riêng theo từng tháng — mỗi tháng khởi điểm lại 100 điểm"></select>
         <div class="search"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.2" stroke="currentColor" stroke-width="1.4"/><path d="M9.4 9.4 12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input id="global-search" type="text" placeholder="Tìm học sinh…"></div>
         <button class="btn btn-primary perm-record_violations" id="btn-quick-violation">+ Ghi nhận vi phạm</button>
       </div>
     </div>
-    <div id="role-banner"></div>
     <div id="load-error" class="form-error" style="margin-bottom:14px;"></div>
 
     <section class="view" id="view-dashboard">
@@ -383,7 +384,7 @@
 
     <section class="view" id="view-conduct" hidden>
       <div class="card card-pad formula-card">
-        <div><h2>Cách tính điểm hạnh kiểm</h2><div class="card-desc" style="max-width:46ch;">Mỗi học sinh khởi điểm 100 điểm; trừ theo lỗi vi phạm, cộng điểm khen thưởng (tối đa +10), giới hạn 0–100. Tính trực tiếp từ dữ liệu API, không lưu bảng riêng.</div></div>
+        <div><h2>Cách tính điểm hạnh kiểm</h2><div class="card-desc" style="max-width:46ch;">Mỗi học sinh khởi điểm <strong>100 điểm vào đầu mỗi tháng</strong> — điểm không cộng dồn qua tháng. Trong tháng: trừ theo lỗi vi phạm, cộng điểm khen thưởng (tối đa +10), giới hạn 0–100. Chọn tháng ở góc trên bên phải để xem lại tháng trước.</div></div>
         <div class="formula-box tabular">100 − Σ điểm trừ + min(Σ điểm cộng, 10)</div>
       </div>
       <div class="threshold-grid">

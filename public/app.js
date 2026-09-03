@@ -205,6 +205,7 @@
     violations: [],
     merits: [],
     conduct: [],
+    conductMonth: null,
     audit: [],
     users: [],
     availablePermissions: [],
@@ -217,24 +218,66 @@
     return Array.from(names).sort();
   }
 
+  /* ================= THÁNG ================= */
+  const SCHOOL_YEAR_START_MONTH = "2026-08"; // đầu năm học 2026-2027
+  function ymNow() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }
+  function monthLabel(ym) {
+    const [y, m] = ym.split("-");
+    return `Tháng ${Number(m)}/${y}`;
+  }
+  function monthRange(fromYm, toYm) {
+    const out = [];
+    let [y, m] = fromYm.split("-").map(Number);
+    const [ty, tm] = toYm.split("-").map(Number);
+    while (y < ty || (y === ty && m <= tm)) {
+      out.push(`${y}-${String(m).padStart(2, "0")}`);
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+    return out;
+  }
+  function populateMonthSelect() {
+    const sel = $("#month-select");
+    const now = ymNow();
+    const to = now > SCHOOL_YEAR_START_MONTH ? now : SCHOOL_YEAR_START_MONTH;
+    const months = monthRange(SCHOOL_YEAR_START_MONTH, to).reverse(); // mới nhất trước
+    sel.innerHTML = months.map((m) => `<option value="${m}" ${m === state.conductMonth ? "selected" : ""}>${monthLabel(m)}</option>`).join("");
+  }
+
+  // Điểm hạnh kiểm tính riêng theo tháng — 100 điểm khởi điểm mỗi tháng, không cộng dồn.
+  async function loadConduct(month) {
+    try {
+      const data = await apiFetch(`/conduct/scores?month=${encodeURIComponent(month)}`);
+      state.conduct = data.scores;
+      state.conductMonth = data.month;
+    } catch (e) {
+      state.conduct = [];
+    }
+  }
+
   // Dữ liệu công khai — tải được ngay cả khi chưa đăng nhập.
   async function loadPublicData() {
     $("#load-error").textContent = "";
     try {
-      const [students, violationTypes, meritTypes, violations, merits, conduct] = await Promise.all([
+      const [students, violationTypes, meritTypes, violations, merits] = await Promise.all([
         apiFetch("/students"),
         apiFetch("/violation-types"),
         apiFetch("/merit-types"),
         apiFetch("/violations"),
         apiFetch("/merits"),
-        apiFetch("/conduct/scores"),
       ]);
       state.students = students;
       state.violationTypes = violationTypes;
       state.meritTypes = meritTypes;
       state.violations = violations;
       state.merits = merits;
-      state.conduct = conduct;
+      await loadConduct(state.conductMonth || ymNow());
 
       fillStudentSelect($("#v-student"));
       fillStudentSelect($("#m-student"));
@@ -243,6 +286,7 @@
       updateViolationTypeOutput();
       updateMeritTypeOutput();
       fillGroupSelect($("#nu-group"));
+      populateMonthSelect();
     } catch (e) {
       $("#load-error").textContent = "Không tải được dữ liệu: " + e.message;
     }
@@ -301,19 +345,19 @@
   /* ================= RENDER: DASHBOARD ================= */
   function renderDashboard() {
     const total = state.students.length;
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const inWeek = (d) => new Date(d) >= sevenDaysAgo;
-    const violThisWeek = state.violations.filter((v) => inWeek(v.occurredAt)).length;
-    const meritThisWeek = state.merits.filter((m) => inWeek(m.occurredAt)).length;
+    const month = state.conductMonth || ymNow();
+    const inMonth = (d) => d.startsWith(month);
+    const violInMonth = state.violations.filter((v) => inMonth(v.occurredAt)).length;
+    const meritInMonth = state.merits.filter((m) => inMonth(m.occurredAt)).length;
     const attention = state.conduct.filter((c) => c.score < 70);
 
+    $("#view-sub").textContent = `Lớp 11B10 · ${monthLabel(month)} · Mỗi học sinh 100 điểm/tháng`;
     $("#badge-total-count").textContent = `${total} học sinh`;
     $("#stat-grid").innerHTML = `
       <div class="card stat-tile"><div class="label">Tổng học sinh</div><div class="value tabular">${total}</div><div class="delta delta-flat">Lớp 11B10</div></div>
-      <div class="card stat-tile"><div class="label">Vi phạm 7 ngày qua</div><div class="value tabular">${violThisWeek}</div><div class="delta delta-up">↑ cần giám sát sát sao</div></div>
-      <div class="card stat-tile"><div class="label">Khen thưởng 7 ngày qua</div><div class="value tabular">${meritThisWeek}</div><div class="delta delta-down">↑ ghi nhận tích cực</div></div>
-      <div class="card stat-tile"><div class="label">Học sinh cần lưu ý</div><div class="value tabular">${attention.length}</div><div class="delta ${attention.length ? "delta-up" : "delta-flat"}">điểm hạnh kiểm dưới 70</div></div>`;
+      <div class="card stat-tile"><div class="label">Vi phạm trong tháng</div><div class="value tabular">${violInMonth}</div><div class="delta delta-up">↑ cần giám sát sát sao</div></div>
+      <div class="card stat-tile"><div class="label">Khen thưởng trong tháng</div><div class="value tabular">${meritInMonth}</div><div class="delta delta-down">↑ ghi nhận tích cực</div></div>
+      <div class="card stat-tile"><div class="label">Học sinh cần lưu ý</div><div class="value tabular">${attention.length}</div><div class="delta ${attention.length ? "delta-up" : "delta-flat"}">điểm hạnh kiểm dưới 70 (${monthLabel(month)})</div></div>`;
 
     const counts = { tot: 0, kha: 0, dat: 0, chua_dat: 0 };
     state.conduct.forEach((c) => counts[c.classification]++);
@@ -662,6 +706,14 @@
     $("#v-type").addEventListener("change", updateViolationTypeOutput);
     $("#m-type").addEventListener("change", updateMeritTypeOutput);
 
+    // ---- Chọn tháng xem hạnh kiểm (100 điểm khởi điểm mỗi tháng) ----
+    $("#month-select").addEventListener("change", async (e) => {
+      await loadConduct(e.target.value);
+      renderDashboard();
+      renderConduct();
+      renderReports();
+    });
+
     // ---- Đăng nhập / đăng xuất ----
     $("#btn-login-open").addEventListener("click", () => {
       $("#login-error").textContent = "";
@@ -911,7 +963,10 @@
     $$(".view").forEach((v) => (v.hidden = v.id !== "view-" + view));
     $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
     $("#view-title").textContent = VIEW_META[view].title;
-    $("#view-sub").textContent = VIEW_META[view].sub;
+    // Tổng quan có phụ đề động theo tháng đang chọn — renderDashboard() tự cập nhật;
+    // các trang khác dùng phụ đề tĩnh.
+    if (view !== "dashboard") $("#view-sub").textContent = VIEW_META[view].sub;
+    else if (state.conductMonth) $("#view-sub").textContent = `Lớp 11B10 · ${monthLabel(state.conductMonth)} · Mỗi học sinh 100 điểm/tháng`;
   }
   $$(".nav-item[data-view]").forEach((btn) => btn.addEventListener("click", () => switchView(btn.dataset.view)));
 

@@ -30,18 +30,27 @@ export const ENTITIES = [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        // Dev: SQLite tại chỗ, không cần cài đặt gì. Production: đổi "type" thành
-        // "postgres" và thêm host/port/username/password/database (đúng khuyến
-        // nghị PostgreSQL trong tài liệu kiến trúc) — chỉ sửa ở khối này.
-        type: "better-sqlite3",
-        database: config.get<string>("DATABASE_PATH", "dev.db"),
-        entities: ENTITIES,
-        // Tiện cho MVP: tự tạo bảng theo entity, không cần chạy migration riêng.
-        // Trước khi có dữ liệu thật/production: tắt synchronize, dùng
-        // `typeorm migration:generate` + `migration:run` để kiểm soát thay đổi schema.
-        synchronize: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        const databaseUrl = config.get<string>("DATABASE_URL");
+        if (databaseUrl) {
+          // Production: Postgres bền vững (VD Neon.tech) — ổ đĩa Render Free không
+          // lưu lâu dài nên KHÔNG dùng SQLite khi đã có DATABASE_URL.
+          return {
+            type: "postgres",
+            url: databaseUrl,
+            entities: ENTITIES,
+            synchronize: true, // MVP: tự tạo bảng theo entity — chuyển sang migration khi ổn định schema
+            ssl: { rejectUnauthorized: false }, // Neon (và hầu hết Postgres cloud) bắt buộc TLS
+          };
+        }
+        // Dev: SQLite tại chỗ, không cần cài đặt/tài khoản gì thêm.
+        return {
+          type: "better-sqlite3",
+          database: config.get<string>("DATABASE_PATH", "dev.db"),
+          entities: ENTITIES,
+          synchronize: true,
+        };
+      },
     }),
   ],
 })

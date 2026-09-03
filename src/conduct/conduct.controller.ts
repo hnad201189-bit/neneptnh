@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Query } from "@nestjs/common";
 import { ConductService } from "./conduct.service";
 
 // Công khai — điểm hạnh kiểm là một trong các "chỉ số" ai cũng xem được.
@@ -6,8 +6,10 @@ import { ConductService } from "./conduct.service";
 export class ConductController {
   constructor(private readonly service: ConductService) {}
 
+  // ?month=YYYY-MM — bỏ trống = tháng hiện tại. Mỗi học sinh khởi điểm lại 100
+  // điểm mỗi tháng, không cộng dồn.
   @Get("scores")
-  scores() {
-    return this.service.list();
+  scores(@Query("month") month?: string) {
+    return this.service.list(month);
   }
 }

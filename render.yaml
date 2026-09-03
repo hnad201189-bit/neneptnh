@@ -8,8 +8,16 @@ services:
     envVars:
       - key: PORT
         value: "3000"
-      - key: DATABASE_PATH
-        value: "dev.db"
+      # Bắt buộc phải có để dữ liệu không mất khi Render khởi động lại container —
+      # dán chuỗi kết nối Postgres (VD từ Neon.tech) vào đây trong Render Dashboard,
+      # KHÔNG ghi trực tiếp vào file này (đây là repo công khai/riêng tư nhưng
+      # không nên lưu bí mật thật trong git).
+      - key: DATABASE_URL
+        sync: false
+      # Đổi mật khẩu Admin thật trước khi dùng dữ liệu học sinh thật — nếu bỏ trống,
+      # hệ thống sẽ dùng mật khẩu mặc định "Admin@123" (không an toàn cho trang công khai).
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
       - key: COOKIE_SECURE
         value: "true"
       - key: JWT_ACCESS_TTL
