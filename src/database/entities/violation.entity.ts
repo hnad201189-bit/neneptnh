@@ -42,8 +42,8 @@ export class Violation {
   @Column({ type: "varchar", nullable: true })
   processedByUserId?: string | null;
 
-  @Column({ type: "timestamp", nullable: true })
-  processedAt?: Date | null;
+  @Column({ nullable: true })
+  processedAt?: Date;
 
   @CreateDateColumn()
   createdAt!: Date;
