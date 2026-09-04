@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+<title>Sổ Tay Tổ Trưởng · Nề Nếp Số 11B10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#F3F6FD; --surface:#FFFFFF; --surface-2:#F0F4FC;
+    --text-primary:#152244; --text-secondary:#516086; --text-muted:#8895B3;
+    --line:#DDE5F6; --line-strong:#C2CEEC;
+    --accent:#D6331F; --accent-soft:#FDE6E1; --focus:#2454C7;
+    --good:#0ca30c; --good-soft:#E4F6E4; --warn:#a8720a; --warn-soft:#FDF1DA;
+    --shadow:0 1px 2px rgba(20,40,110,.08), 0 6px 20px rgba(20,40,110,.06);
+    --font-display:'Baloo 2','Be Vietnam Pro',Georgia,sans-serif;
+    --font-body:'Be Vietnam Pro','Segoe UI',Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --paper:#0C1220; --surface:#131B30; --surface-2:#0F1728;
+      --text-primary:#EAEFFC; --text-secondary:#AAB6D6; --text-muted:#7C88AC;
+      --line:#25304E; --line-strong:#334066;
+      --accent:#FF7A5C; --accent-soft:#3A2419; --focus:#7CA1F0;
+      --good:#4ADE80; --good-soft:#153621; --warn:#FBBF24; --warn-soft:#3A2E0F;
+      --shadow:0 1px 2px rgba(0,0,0,.45), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --paper:#0C1220; --surface:#131B30; --surface-2:#0F1728;
+    --text-primary:#EAEFFC; --text-secondary:#AAB6D6; --text-muted:#7C88AC;
+    --line:#25304E; --line-strong:#334066;
+    --accent:#FF7A5C; --accent-soft:#3A2419; --focus:#7CA1F0;
+    --good:#4ADE80; --good-soft:#153621; --warn:#FBBF24; --warn-soft:#3A2E0F;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 6px 20px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--text-primary); font-family:var(--font-body); line-height:1.6;}
+  h1,h2,h3{font-family:var(--font-display); text-wrap:balance; margin:0;}
+  strong{font-weight:700;}
+  img{max-width:100%;}
+  .wrap{max-width:740px; margin:0 auto; padding:28px 22px 70px;}
+
+  .back-link{display:inline-flex; align-items:center; gap:6px; color:var(--text-secondary); text-decoration:none; font-size:.84rem; font-weight:600; margin-bottom:20px;}
+  .back-link:hover{color:var(--accent);}
+
+  /* ---------- header ---------- */
+  .head{display:flex; align-items:center; gap:14px; margin-bottom:26px;}
+  .head-badge{width:52px; height:52px; border-radius:16px; background:var(--accent); color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:1.5rem; flex:none; box-shadow:var(--shadow);}
+  .head h1{font-size:1.7rem; font-weight:700; color:var(--text-primary);}
+  .head .sub{font-size:.86rem; color:var(--text-muted); margin-top:3px;}
+
+  /* ---------- credential box ---------- */
+  .cred{background:var(--surface); border:1.5px dashed var(--line-strong); border-radius:14px; padding:18px 20px; margin-bottom:22px;}
+  .cred h3{font-size:.98rem; font-weight:700; margin-bottom:3px;}
+  .cred .hint{font-size:.78rem; color:var(--text-muted); margin-bottom:14px;}
+  .cred-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 18px;}
+  .cred-row{display:flex; align-items:baseline; gap:8px; border-bottom:1px solid var(--line); padding-bottom:7px;}
+  .cred-row .k{font-size:.76rem; color:var(--text-muted); font-weight:600; white-space:nowrap;}
+  .cred-row .v{flex:1; height:1.1em;}
+  .cred-note{margin-top:14px; font-size:.78rem; color:var(--accent); font-weight:600;}
+  @media (max-width:520px){ .cred-grid{grid-template-columns:1fr;} }
+
+  /* ---------- scope card ---------- */
+  .scope{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:26px 0 30px;}
+  @media (max-width:560px){ .scope{grid-template-columns:1fr;} }
+  .scope-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow);}
+  .scope-card h3{font-size:.88rem; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:7px;}
+  .scope-card ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px;}
+  .scope-card li{display:flex; gap:8px; font-size:.85rem; color:var(--text-secondary); align-items:flex-start;}
+  .tick{flex:none; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.66rem; font-weight:700; margin-top:1px;}
+  .tick-yes{background:var(--good-soft); color:var(--good);}
+  .tick-no{background:var(--surface-2); color:var(--text-muted);}
+
+  /* ---------- section label ---------- */
+  .section-label{font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin:36px 0 14px;}
+
+  /* ---------- steps ---------- */
+  .steps{position:relative;}
+  .step{display:flex; gap:16px; position:relative; padding-bottom:28px;}
+  .step:last-child{padding-bottom:0;}
+  .step:not(:last-child)::before{content:""; position:absolute; left:19px; top:42px; bottom:0; width:2px; background:var(--line);}
+  .step-num{flex:none; width:40px; height:40px; border-radius:50%; background:var(--surface); border:2px solid var(--accent);
+    color:var(--accent); font-family:var(--font-display); font-weight:700; font-size:1.05rem; display:flex; align-items:center; justify-content:center; z-index:1;}
+  .step-body{flex:1; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 20px; box-shadow:var(--shadow);}
+  .step-body h3{font-size:1.02rem; font-weight:700; margin-bottom:6px;}
+  .step-body p{margin:0 0 10px; font-size:.88rem; color:var(--text-secondary);}
+  .step-body p:last-child{margin-bottom:0;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0;}
+  .chip{background:var(--surface-2); border:1px solid var(--line); color:var(--text-secondary); font-size:.74rem; font-weight:600;
+    padding:4px 10px; border-radius:99px; font-family:var(--font-body);}
+  .btn-ref{display:inline-flex; align-items:center; gap:5px; background:var(--focus); color:#fff; font-size:.76rem; font-weight:600;
+    padding:4px 11px 4px 9px; border-radius:7px; white-space:nowrap;}
+  .mini-note{background:var(--surface-2); border-left:3px solid var(--focus); border-radius:0 8px 8px 0; padding:8px 12px; font-size:.8rem; color:var(--text-secondary); margin-top:10px;}
+  .mini-note.warn{border-left-color:var(--accent);}
+  .substeps{list-style:none; margin:12px 0; padding:0; counter-reset:sub; display:flex; flex-direction:column; gap:9px;}
+  .substeps li{counter-increment:sub; display:flex; gap:10px; font-size:.85rem; color:var(--text-secondary); align-items:baseline;}
+  .substeps li::before{content:counter(sub); flex:none; width:19px; height:19px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line);
+    color:var(--accent); font-family:var(--font-display); font-weight:700; font-size:.68rem; display:flex; align-items:center; justify-content:center; margin-top:1px;}
+  .substeps b{color:var(--text-primary);}
+  .formula{font-family:var(--font-display); background:var(--surface-2); border:1px solid var(--line); border-radius:8px;
+    padding:9px 13px; font-size:.92rem; display:inline-block; margin:8px 0 4px;}
+
+  /* ---------- callout ---------- */
+  .callout{background:var(--accent-soft); border-radius:14px; padding:20px 22px; margin:34px 0;}
+  .callout h3{font-size:1rem; font-weight:700; margin-bottom:12px; color:var(--accent); display:flex; align-items:center; gap:7px;}
+  .callout ul{margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:9px;}
+  .callout li{font-size:.86rem; color:var(--text-primary); display:flex; gap:9px; align-items:flex-start;}
+  .callout li::before{content:"—"; color:var(--accent); font-weight:700; flex:none;}
+
+  /* ---------- support / footer ---------- */
+  .support{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin-top:32px; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;}
+  .support h3{font-size:.92rem; font-weight:700; margin-bottom:3px;}
+  .support p{margin:0; font-size:.8rem; color:var(--text-muted);}
+  .support .site{font-family:var(--font-display); font-weight:700; color:var(--accent); font-size:.92rem;}
+
+  footer{text-align:center; margin-top:34px; font-size:.74rem; color:var(--text-muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="/">← Về trang chính</a>
+
+  <div class="head">
+    <div class="head-badge">📋</div>
+    <div>
+      <h1>Sổ Tay Tổ Trưởng</h1>
+      <div class="sub">Nề Nếp Số 11B10 · THPT Trần Nguyên Hãn</div>
+    </div>
+  </div>
+
+  <div class="cred">
+    <h3>Thông tin đăng nhập của bạn</h3>
+    <div class="hint">Cô Hường điền tay mục này trước khi đưa cho bạn — đây là tài khoản riêng, không dùng chung.</div>
+    <div class="cred-grid">
+      <div class="cred-row"><span class="k">Họ tên</span><span class="v"></span></div>
+      <div class="cred-row"><span class="k">Tổ phụ trách</span><span class="v"></span></div>
+      <div class="cred-row"><span class="k">Email đăng nhập</span><span class="v"></span></div>
+      <div class="cred-row"><span class="k">Mật khẩu</span><span class="v"></span></div>
+    </div>
+    <div class="cred-note">⚠ Không chia sẻ mật khẩu này cho bất kỳ ai khác.</div>
+  </div>
+
+  <div class="scope">
+    <div class="scope-card">
+      <h3><span class="tick tick-yes">✓</span> Bạn được làm gì</h3>
+      <ul>
+        <li><span class="tick tick-yes">✓</span> Ghi nhận vi phạm cho học sinh <strong>trong tổ mình</strong></li>
+        <li><span class="tick tick-yes">✓</span> Ghi nhận khen thưởng cho học sinh <strong>trong tổ mình</strong></li>
+        <li><span class="tick tick-yes">✓</span> Xem điểm hạnh kiểm, lịch sử của <strong>cả lớp</strong> (ai cũng xem được)</li>
+      </ul>
+    </div>
+    <div class="scope-card">
+      <h3><span class="tick tick-no">✕</span> Bạn không làm được</h3>
+      <ul>
+        <li><span class="tick tick-no">✕</span> Ghi nhận cho học sinh tổ khác — hệ thống tự chặn</li>
+        <li><span class="tick tick-no">✕</span> Sửa danh mục lỗi / hình thức khen thưởng</li>
+        <li><span class="tick tick-no">✕</span> Tạo hoặc sửa tài khoản người khác</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-label">Các bước sử dụng</div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Đăng nhập</h3>
+        <p>Vào <span class="chip">neneptnh.online</span> — trang hiện ngay số liệu công khai, không cần đăng nhập. Để ghi nhận vi phạm/khen thưởng, bấm nút ở cuối menu bên trái:</p>
+        <div class="chips"><span class="btn-ref">Đăng nhập nội bộ</span></div>
+        <p>Nhập <span class="chip">Email</span> và <span class="chip">Mật khẩu</span> đã được cấp ở trên, rồi bấm <span class="btn-ref">Đăng nhập</span>.</p>
+        <div class="mini-note">Đăng nhập xong, menu bên trái sẽ hiện thêm các mục ghi nhận — trước đó những mục này bị ẩn.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Ghi nhận vi phạm</h3>
+        <p>Vào tab <span class="chip">Vi phạm</span> (hoặc bấm nhanh <span class="btn-ref">+ Ghi nhận vi phạm</span> ngay trên Tổng quan). Trong khung <strong>"Ghi nhận vi phạm mới"</strong>, làm theo thứ tự:</p>
+        <ol class="substeps">
+          <li>Bấm ô <b>Học sinh</b> → chọn đúng tên trong tổ mình. Mỗi tên đều ghi kèm tổ (VD: "Nguyễn Văn A — Tổ 2") để bạn dễ kiểm tra không chọn nhầm.</li>
+          <li>Bấm ô <b>Loại lỗi</b> → chọn lỗi tương ứng. Hai ô <b>Mức độ</b> và <b>Điểm trừ</b> bên cạnh sẽ tự động hiện ra — không cần tự tính.</li>
+          <li><b>Ngày vi phạm</b> mặc định là hôm nay — chỉ sửa lại nếu bạn ghi nhận muộn hơn ngày xảy ra.</li>
+          <li><b>Ghi chú / minh chứng</b>: mô tả ngắn gọn sự việc (không bắt buộc, nhưng nên ghi để dễ tra cứu sau này).</li>
+          <li>Bấm nút <span class="btn-ref">Ghi nhận</span> — bản ghi lưu ngay lập tức và hiện ở đầu bảng <b>"Lịch sử vi phạm"</b> phía dưới, không cần tải lại trang.</li>
+        </ol>
+        <div class="mini-note">Bản ghi mới luôn ở trạng thái <strong>"Chờ xử lý"</strong> — chờ tài khoản có quyền xử lý (GVCN/cán bộ) xác nhận tiếp, đây là bình thường.</div>
+        <div class="mini-note warn">Nếu bấm <b>Ghi nhận</b> mà báo lỗi đỏ "Tài khoản này chỉ được ghi nhận cho học sinh trong tổ được cấp" — nghĩa là bạn đang chọn nhầm học sinh tổ khác, hãy chọn lại đúng học sinh trong tổ mình.</div>
+        <div class="mini-note">Muốn ghi tiếp lượt khác ngay sau đó? Chỉ cần đổi lại ô <b>Học sinh</b> (và <b>Loại lỗi</b> nếu khác) rồi bấm <b>Ghi nhận</b> lần nữa — không cần nhập lại từ đầu.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Ghi nhận khen thưởng</h3>
+        <p>Vào tab <span class="chip">Khen thưởng</span>. Trong khung <strong>"Ghi nhận khen thưởng"</strong>, làm theo thứ tự:</p>
+        <ol class="substeps">
+          <li>Bấm ô <b>Học sinh</b> → chọn đúng tên trong tổ mình (cũng ghi kèm tổ để dễ kiểm tra).</li>
+          <li>Bấm ô <b>Hình thức khen thưởng</b> → chọn hình thức phù hợp (VD: giúp bạn học tập, thành tích xuất sắc…).</li>
+          <li><b>Ngày ghi nhận</b> mặc định là hôm nay — sửa lại nếu cần.</li>
+          <li><b>Ghi chú</b>: mô tả ngắn việc làm tốt của học sinh (không bắt buộc).</li>
+          <li>Bấm nút <span class="btn-ref">Ghi nhận khen thưởng</span> — hiện ngay ở đầu bảng <b>"Lịch sử khen thưởng"</b> phía dưới.</li>
+        </ol>
+        <div class="mini-note">Mỗi học sinh được cộng <strong>tối đa +10 điểm/tháng</strong> từ khen thưởng — ghi nhận thêm vẫn được lưu lại làm minh chứng thành tích, nhưng phần điểm cộng vào hạnh kiểm sẽ dừng ở mức +10.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Theo dõi điểm hạnh kiểm tổ mình</h3>
+        <p>Vào tab <span class="chip">Hạnh kiểm</span>, lọc theo tổ ở ô <span class="chip">Tất cả tổ</span>. Công thức tính:</p>
+        <div class="formula">100 − tổng điểm trừ + tổng điểm cộng (tối đa +10)</div>
+        <p>Chọn tháng ở góc trên bên phải trang để xem lại các tháng trước.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <h3>⚠ Lưu ý quan trọng</h3>
+    <ul>
+      <li>Mỗi học sinh khởi điểm lại <strong>100 điểm vào đầu mỗi tháng</strong> — điểm <strong>không cộng dồn</strong> qua các tháng.</li>
+      <li>Mọi bản ghi đều lưu lại <strong>người ghi + thời gian</strong> và không thể xoá — vì vậy hãy kiểm tra kỹ trước khi bấm Ghi nhận.</li>
+      <li>Ghi nhận <strong>càng sớm càng tốt</strong>, ngay khi sự việc xảy ra, để số liệu chính xác.</li>
+      <li>Quên mật khẩu hoặc cần đổi? Bạn <strong>không tự đổi được</strong> — liên hệ cô Hường để được cấp lại.</li>
+    </ul>
+  </div>
+
+  <div class="support">
+    <div>
+      <h3>Cần hỗ trợ?</h3>
+      <p>Liên hệ cô Hường để được hướng dẫn thêm.</p>
+    </div>
+    <div class="site">neneptnh.online</div>
+  </div>
+
+  <footer>Sổ tay dành riêng cho tài khoản Tổ trưởng · Nề Nếp Số 11B10</footer>
+
+</div>
+</body>
+</html>
