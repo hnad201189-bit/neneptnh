@@ -4,7 +4,8 @@ import { JwtAccessGuard } from "../auth/guards/jwt-access.guard";
 import { AdminGuard } from "../auth/guards/admin.guard";
 
 class UpdateLeaderDto {
-  leaderStudentId!: string | null;
+  leaderStudentId?: string | null;
+  studentId?: string | null;
 }
 
 @Controller("groups")
@@ -19,6 +20,7 @@ export class GroupsController {
   @Patch(":id/leader")
   @UseGuards(JwtAccessGuard, AdminGuard)
   updateLeader(@Param("id") id: string, @Body() dto: UpdateLeaderDto) {
-    return this.groupsService.updateLeader(id, dto.leaderStudentId);
+    const leaderId = dto.leaderStudentId !== undefined ? dto.leaderStudentId : (dto.studentId ?? null);
+    return this.groupsService.updateLeader(id, leaderId);
   }
 }
