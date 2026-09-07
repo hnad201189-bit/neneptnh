@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -241,6 +241,22 @@
   .empty-note{color:var(--text-muted); font-size:.82rem; padding:14px 0;}
   .field-wide{grid-column:1/-1;}
   .spinner-note{color:var(--text-muted); font-size:.85rem; padding:24px; text-align:center;}
+
+  /* Team Leader & Admin Classification */
+  .team-leader-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px; margin-top:14px;}
+  .leader-card{background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; position:relative;}
+  .leader-card:hover{border-color:var(--accent); box-shadow:0 3px 10px rgba(0,0,0,.04);}
+  .leader-card-head{display:flex; justify-content:space-between; align-items:center;}
+  .leader-card-title{font-weight:700; font-size:.96rem; display:flex; align-items:center; gap:8px;}
+  .leader-card-student{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:.82rem;}
+  .leader-card-student .s-label{font-size:.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;}
+  .leader-card-student .s-name{font-weight:700; color:var(--text-primary); font-size:.88rem; margin-top:2px;}
+  .leader-card-user{font-size:.78rem; padding:4px 0;}
+  .leader-card-actions{display:flex; gap:6px; margin-top:auto;}
+  .leader-card-actions button{flex:1; justify-content:center; font-size:.76rem; padding:5px 6px;}
+
+  .edit-modal-card{position:relative; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-card); padding:24px 22px;}
+  .preset-banner{background:color-mix(in srgb, var(--accent) 10%, transparent); border:1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-radius:9px; padding:12px 14px; margin-bottom:14px;}
 </style>
 </head>
 <body>
@@ -335,7 +351,7 @@
       <div class="topbar-actions">
         <select id="month-select" class="month-select" data-tip="Điểm hạnh kiểm tính riêng theo từng tháng — mỗi tháng khởi điểm lại 100 điểm"></select>
         <div class="search"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.2" stroke="currentColor" stroke-width="1.4"/><path d="M9.4 9.4 12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input id="global-search" type="text" placeholder="Tìm học sinh…"></div>
-        <button class="btn btn-primary perm-record_violations" id="btn-quick-violation">+ Ghi nhận vi phạm</button>
+        <button class="btn btn-primary" id="btn-quick-violation">+ Ghi nhận vi phạm</button>
       </div>
     </div>
     <div id="load-error" class="form-error" style="margin-bottom:14px;"></div>
@@ -473,29 +489,190 @@
     </section>
 
     <section class="view" id="view-users" hidden>
+      <!-- PHÂN LOẠI & QUẢN LÝ TỔ TRƯỞNG -->
       <div class="card card-pad">
-        <div class="card-head"><h2>Quản lý tài khoản</h2>
-          <button class="btn-icon btn-icon-add" id="btn-toggle-add-user" aria-label="Thêm tài khoản">+</button>
+        <div class="card-head">
+          <div>
+            <h2>Phân loại & Quản lý Tổ trưởng (Lớp 11B10)</h2>
+            <div class="card-desc">Chỉ định học sinh làm Tổ trưởng và quản lý tài khoản ghi nhận nề nếp riêng cho từng tổ.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-sync-team-leaders" title="Tự động đồng bộ và khởi tạo đủ 4 tài khoản Tổ trưởng theo danh sách nội bộ">
+            ⚡ Đồng bộ 4 tài khoản Tổ trưởng
+          </button>
         </div>
-        <div class="card-desc">Chỉ Quản trị viên thấy trang này. Tạo tài khoản cho người cần đăng nhập để ghi nhận/xử lý dữ liệu — tích đúng những quyền cần thiết, để trống nếu không giới hạn theo tổ.</div>
+
+        <div class="team-leader-grid" id="team-leader-cards">
+          <div class="spinner-note">Đang tải danh sách tổ và tổ trưởng…</div>
+        </div>
+      </div>
+
+      <!-- TOÀN BỘ TÀI KHOẢN HỆ THỐNG -->
+      <div class="card card-pad">
+        <div class="card-head">
+          <div>
+            <h2>Quản lý & Phân quyền tài khoản</h2>
+            <span class="meta" id="users-count-meta"></span>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-toggle-add-user">+ Tạo tài khoản mới</button>
+        </div>
+        <div class="card-desc">Chỉ Quản trị viên thấy trang này. Tài khoản Tổ trưởng chỉ được ghi nhận cho học sinh trong tổ được cấp.</div>
+
+        <!-- BỘ LỌC PHÂN LOẠI -->
+        <div class="filter-row" style="margin-top:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label for="filter-u-role" style="font-size:.76rem; font-weight:600; color:var(--text-secondary);">Phân loại vai trò:</label>
+            <select id="filter-u-role">
+              <option value="">Tất cả vai trò</option>
+              <option value="admin">Quản trị viên (Admin)</option>
+              <option value="to_truong">Tổ trưởng (Theo tổ)</option>
+              <option value="other">Cán bộ / GVCN</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label for="filter-u-group" style="font-size:.76rem; font-weight:600; color:var(--text-secondary);">Phạm vi tổ:</label>
+            <select id="filter-u-group">
+              <option value="">Tất cả tổ</option>
+              <option value="all">Cả lớp (Không giới hạn)</option>
+            </select>
+          </div>
+        </div>
+
         <div class="table-scroll"><table class="data" id="table-users"></table></div>
 
-        <div class="form-panel card-pad" id="panel-add-user" hidden>
+        <!-- FORM TẠO TÀI KHOẢN -->
+        <div class="form-panel card-pad" id="panel-add-user" hidden style="margin-top:16px; border:1px solid var(--line); border-radius:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:.95rem; font-weight:700;">Tạo tài khoản mới</h3>
+            <span class="meta">Hỗ trợ điền nhanh theo vai trò</span>
+          </div>
+
+          <div class="preset-banner">
+            <label for="nu-preset" style="font-size:.78rem; font-weight:700; color:var(--text-primary); display:block; margin-bottom:4px;">
+              ⚡ Chọn mẫu phân loại vai trò nhanh:
+            </label>
+            <select id="nu-preset" style="width:100%; padding:8px 10px; border:1px solid var(--line-strong); border-radius:7px; background:var(--surface);">
+              <option value="custom">-- Tự chọn / Tùy biến tự do --</option>
+              <option value="to_1">Tổ trưởng Tổ 1 (Đặng Thảo An · to1.11b10@thpttnh.edu.vn)</option>
+              <option value="to_2">Tổ trưởng Tổ 2 (Nguyễn Thùy Lâm · to2.11b10@thpttnh.edu.vn)</option>
+              <option value="to_3">Tổ trưởng Tổ 3 (Nguyễn Hải Yến Nhi · to3.11b10@thpttnh.edu.vn)</option>
+              <option value="to_4">Tổ trưởng Tổ 4 (Nguyễn Thu Thủy · to4.11b10@thpttnh.edu.vn)</option>
+              <option value="gvcn">Giáo viên chủ nhiệm (Nguyễn Thị Hường · Toàn quyền quản lý nề nếp)</option>
+              <option value="giam_thi">Cán bộ Giám thị / Đoàn trường (Ghi nhận + Chuyển trạng thái)</option>
+            </select>
+          </div>
+
           <div class="form-grid">
             <div class="field"><label for="nu-email">Email đăng nhập</label><input id="nu-email" type="email" placeholder="ten@thpttnh.edu.vn"></div>
             <div class="field"><label for="nu-name">Họ tên hiển thị</label><input id="nu-name" type="text" placeholder="VD: Trần Văn Long"></div>
             <div class="field"><label for="nu-password">Mật khẩu</label><input id="nu-password" type="text" placeholder="Tối thiểu 6 ký tự"></div>
-            <div class="field"><label for="nu-group">Giới hạn theo tổ (tuỳ chọn)</label><select id="nu-group"><option value="">Không giới hạn — cả lớp</option></select></div>
+            <div class="field"><label for="nu-group">Giới hạn theo tổ (Tổ trưởng chọn tổ)</label><select id="nu-group"><option value="">Không giới hạn — cả lớp</option></select></div>
           </div>
           <div class="field field-wide" style="margin-top:12px;">
             <label>Quyền được cấp</label>
             <div id="nu-permissions" style="display:flex; flex-wrap:wrap; gap:14px; margin-top:4px;"></div>
           </div>
-          <div class="form-actions"><button class="btn btn-primary btn-sm" id="btn-save-user">Tạo tài khoản</button><button class="btn btn-ghost btn-sm" id="btn-cancel-user">Hủy</button><span class="form-error" id="user-error"></span></div>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" id="btn-save-user">Tạo tài khoản</button>
+            <button class="btn btn-ghost btn-sm" id="btn-cancel-user">Hủy</button>
+            <span class="form-error" id="user-error"></span>
+          </div>
         </div>
       </div>
     </section>
   </main>
+</div>
+
+<!-- ============ MODAL CHỈNH SỬA TÀI KHOẢN ============ -->
+<div id="modal-edit-user" class="modal-overlay" hidden>
+  <div class="edit-modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 style="font-size:1.05rem; font-weight:700;">Chỉnh sửa tài khoản & Phân loại</h3>
+      <button type="button" class="modal-close" id="btn-close-edit-user">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>Email</label><input id="eu-email" type="text" disabled style="background:var(--surface-2); color:var(--text-secondary);"></div>
+      <div class="field"><label for="eu-name">Họ tên hiển thị</label><input id="eu-name" type="text"></div>
+      <div class="field"><label for="eu-group">Phân loại theo tổ</label><select id="eu-group"></select></div>
+      <div class="field"><label for="eu-status">Trạng thái</label>
+        <select id="eu-status">
+          <option value="active">Đang hoạt động</option>
+          <option value="locked">Khóa tài khoản</option>
+        </select>
+      </div>
+      <div class="field field-wide"><label for="eu-password">Đổi mật khẩu mới (để trống nếu không đổi)</label><input id="eu-password" type="text" placeholder="Nhập mật khẩu mới nếu muốn đổi"></div>
+    </div>
+    <div class="field field-wide" style="margin-top:14px;">
+      <label>Quyền được cấp</label>
+      <div id="eu-permissions" style="display:flex; flex-wrap:wrap; gap:14px; margin-top:4px;"></div>
+    </div>
+    <div class="form-actions" style="margin-top:16px;">
+      <button class="btn btn-primary btn-sm" id="btn-update-user">Lưu thay đổi</button>
+      <button class="btn btn-ghost btn-sm" id="btn-cancel-edit-user">Hủy</button>
+      <span class="form-error" id="eu-error"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL CHỈ ĐỊNH TỔ TRƯỞNG ============ -->
+<div id="modal-assign-leader" class="modal-overlay" hidden>
+  <div class="edit-modal-card" style="max-width:440px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 id="al-title" style="font-size:1.05rem; font-weight:700;">Chỉ định Tổ trưởng</h3>
+      <button type="button" class="modal-close" id="btn-close-assign-leader">✕</button>
+    </div>
+    <div style="font-size:.82rem; color:var(--text-secondary); margin-bottom:12px;" id="al-desc">
+      Chọn học sinh trong tổ làm Tổ trưởng:
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label for="al-student-select">Học sinh được chỉ định làm Tổ trưởng:</label>
+      <select id="al-student-select" style="margin-top:4px;"></select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" id="btn-save-leader">Lưu chỉ định</button>
+      <button class="btn btn-ghost btn-sm" id="btn-cancel-leader">Hủy</button>
+      <span class="form-error" id="al-error"></span>
+    </div>
+  </div>
+<!-- ============ MODAL CHỈNH SỬA VI PHẠM (GHI NHẦM) ============ -->
+<div id="modal-edit-violation" class="modal-overlay" hidden>
+  <div class="edit-modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 style="font-size:1.05rem; font-weight:700;">✏️ Sửa thông tin vi phạm (Ghi nhầm)</h3>
+      <button type="button" class="modal-close" id="btn-close-edit-violation">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="field field-wide"><label for="ev-student">Học sinh vi phạm</label><select id="ev-student"></select></div>
+      <div class="field field-wide"><label for="ev-type">Hành vi / Lỗi vi phạm</label><select id="ev-type"></select></div>
+      <div class="field"><label for="ev-date">Ngày xảy ra</label><input id="ev-date" type="date"></div>
+      <div class="field field-wide"><label for="ev-note">Ghi chú chi tiết</label><input id="ev-note" type="text" placeholder="Ghi chú hoàn cảnh vi phạm nếu có..."></div>
+    </div>
+    <div class="form-actions" style="margin-top:16px;">
+      <button class="btn btn-primary btn-sm" id="btn-update-violation">Lưu sửa đổi</button>
+      <button class="btn btn-ghost btn-sm" id="btn-cancel-edit-violation">Hủy</button>
+      <span class="form-error" id="ev-error"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL CHỈNH SỬA KHEN THƯỞNG (GHI NHẦM) ============ -->
+<div id="modal-edit-merit" class="modal-overlay" hidden>
+  <div class="edit-modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 style="font-size:1.05rem; font-weight:700;">✏️ Sửa thông tin khen thưởng (Ghi nhầm)</h3>
+      <button type="button" class="modal-close" id="btn-close-edit-merit">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="field field-wide"><label for="em-student">Học sinh khen thưởng</label><select id="em-student"></select></div>
+      <div class="field field-wide"><label for="em-type">Thành tích / Điểm cộng</label><select id="em-type"></select></div>
+      <div class="field"><label for="em-date">Ngày ghi nhận</label><input id="em-date" type="date"></div>
+      <div class="field field-wide"><label for="em-note">Ghi chú chi tiết</label><input id="em-note" type="text" placeholder="Ghi chú chi tiết..."></div>
+    </div>
+    <div class="form-actions" style="margin-top:16px;">
+      <button class="btn btn-primary btn-sm" id="btn-update-merit">Lưu sửa đổi</button>
+      <button class="btn btn-ghost btn-sm" id="btn-cancel-edit-merit">Hủy</button>
+      <span class="form-error" id="em-error"></span>
+    </div>
+  </div>
 </div>
 
 <div id="chart-tooltip"></div>

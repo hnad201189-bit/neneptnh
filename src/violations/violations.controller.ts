@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { ViolationsService } from "./violations.service";
 import { CreateViolationDto } from "./dto/create-violation.dto";
+import { UpdateViolationDto } from "./dto/update-violation.dto";
 import { JwtAccessGuard } from "../auth/guards/jwt-access.guard";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
 import { RequirePermission } from "../auth/decorators/require-permission.decorator";
@@ -22,6 +23,18 @@ export class ViolationsController {
   @Post()
   create(@CurrentUser() user: JwtPayload, @Body() dto: CreateViolationDto) {
     return this.service.create(user, dto);
+  }
+
+  @UseGuards(JwtAccessGuard)
+  @Patch(":id")
+  update(@CurrentUser() user: JwtPayload, @Param("id") id: string, @Body() dto: UpdateViolationDto) {
+    return this.service.update(user, id, dto);
+  }
+
+  @UseGuards(JwtAccessGuard)
+  @Delete(":id")
+  remove(@CurrentUser() user: JwtPayload, @Param("id") id: string) {
+    return this.service.remove(user, id);
   }
 
   @UseGuards(JwtAccessGuard, PermissionsGuard)

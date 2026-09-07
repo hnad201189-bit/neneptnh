@@ -189,12 +189,25 @@ async function main() {
     permissions: [],
   });
 
-  // KHÔNG seed tài khoản ví dụ hay vi phạm/khen thưởng mẫu nữa — Admin tự tạo tài
-  // khoản qua "Quản lý tài khoản" và lớp bắt đầu nhập dữ liệu thật từ đầu, không lẫn
-  // dữ liệu demo. (Nếu muốn dữ liệu mẫu để thử nghiệm cục bộ, xem lịch sử git.)
+  // 4 tài khoản Tổ trưởng chính thức lớp 11B10
+  const OFFICIAL_LEADERS = [
+    { email: "to1.11b10@thpttnh.edu.vn", name: "Đặng Thảo An - Tổ trưởng Tổ 1", group: "Tổ 1" },
+    { email: "to2.11b10@thpttnh.edu.vn", name: "Nguyễn Thùy Lâm - Tổ trưởng Tổ 2", group: "Tổ 2" },
+    { email: "to3.11b10@thpttnh.edu.vn", name: "Nguyễn Hải Yến Nhi - Tổ trưởng Tổ 3", group: "Tổ 3" },
+    { email: "to4.11b10@thpttnh.edu.vn", name: "Nguyễn Thu Thủy - Tổ trưởng Tổ 4", group: "Tổ 4" },
+  ];
+  for (const l of OFFICIAL_LEADERS) {
+    await upsertUser({
+      email: l.email,
+      fullName: l.name,
+      password: "ToTruong@123",
+      isAdmin: false,
+      permissions: ["record_violations", "record_merits"],
+      groupId: groupIdByName[l.group],
+    });
+  }
 
-  console.log("Xong. Xem README.md để lấy thông tin đăng nhập.");
-  console.log({ admin: admin.email, students: STUDENTS.length, violationTypes: VIOLATION_TYPES.length });
+  console.log("Xong. Đã tạo Admin và 4 tài khoản Tổ trưởng 11B10.");
 
   await AppDataSource.destroy();
 }

@@ -26,6 +26,11 @@ export class UsersController {
     return PERMISSIONS.map((key) => ({ key, label: PERMISSION_LABEL[key] }));
   }
 
+  @Post("init-team-leaders")
+  initTeamLeaders(@CurrentUser() user: JwtPayload) {
+    return this.service.initTeamLeaders(user.schoolId);
+  }
+
   @Post()
   create(@CurrentUser() user: JwtPayload, @Body() dto: CreateUserDto) {
     return this.service.create({ schoolId: user.schoolId, ...dto });

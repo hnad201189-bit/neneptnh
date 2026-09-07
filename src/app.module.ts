@@ -11,6 +11,7 @@ import { MeritTypesModule } from "./merit-types/merit-types.module";
 import { ViolationsModule } from "./violations/violations.module";
 import { MeritsModule } from "./merits/merits.module";
 import { ConductModule } from "./conduct/conduct.module";
+import { GroupsModule } from "./groups/groups.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ConductModule } from "./conduct/conduct.module";
     UsersModule,
     AuthModule,
     StudentsModule,
+    GroupsModule,
     AuditLogsModule,
     ViolationTypesModule,
     MeritTypesModule,
