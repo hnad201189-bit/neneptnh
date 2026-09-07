@@ -377,7 +377,12 @@
 
     <section class="view" id="view-students" hidden>
       <div class="card card-pad">
-        <div class="card-head"><h2>Danh sách học sinh</h2></div>
+        <div class="card-head">
+          <h2>Danh sách học sinh</h2>
+          <button class="btn btn-primary btn-sm" id="btn-open-divide-groups" style="gap:6px;">
+            ⚡ Phân chia tổ học sinh
+          </button>
+        </div>
         <div class="filter-row" style="margin-top:16px;">
           <select id="filter-student-to"><option value="">Tất cả tổ</option></select>
           <input id="filter-student-search" type="text" placeholder="Lọc theo tên…">
@@ -633,6 +638,105 @@
       <span class="form-error" id="al-error"></span>
     </div>
   </div>
+</div>
+
+<!-- ============ MODAL CHUYỂN TỔ TỪNG HỌC SINH ============ -->
+<div id="modal-change-student-group" class="modal-overlay" hidden>
+  <div class="edit-modal-card" style="max-width:420px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 style="font-size:1.05rem; font-weight:700;">🔄 Chuyển tổ học sinh</h3>
+      <button type="button" class="modal-close" id="btn-close-change-group">✕</button>
+    </div>
+    <div style="font-size:.88rem; margin-bottom:12px;" id="csg-student-name">
+      Học sinh: <strong>—</strong>
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label for="csg-group-select">Chuyển sang tổ:</label>
+      <select id="csg-group-select" style="margin-top:4px;"></select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" id="btn-save-change-group">Lưu chuyển tổ</button>
+      <button class="btn btn-ghost btn-sm" id="btn-cancel-change-group">Hủy</button>
+      <span class="form-error" id="csg-error"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL PHÂN CHIA TỔ TOÀN BỘ HỌC SINH ============ -->
+<div id="modal-divide-groups" class="modal-overlay" hidden>
+  <div class="edit-modal-card" style="max-width:760px; width:95%;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+      <div>
+        <h3 style="font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:8px;">⚡ Phân chia tổ học sinh (Admin)</h3>
+        <div style="font-size:.8rem; color:var(--text-muted); margin-top:2px;">Quản lý phân bổ 49 học sinh lớp 11B10 vào 4 tổ</div>
+      </div>
+      <button type="button" class="modal-close" id="btn-close-divide-groups">✕</button>
+    </div>
+
+    <!-- Tóm tắt sĩ số từng tổ hiện tại -->
+    <div id="divide-groups-summary" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:16px;"></div>
+
+    <!-- Công cụ phân chia nhanh -->
+    <div class="preset-banner" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;">
+      <div>
+        <div style="font-weight:700; font-size:.86rem;">Chia tổ tự động:</div>
+        <div style="font-size:.76rem; color:var(--text-secondary);">Tự động chia đều 49 học sinh vào 4 tổ (12–13 em/tổ)</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-auto-divide-alpha" title="Chia lần lượt theo danh sách vần A-Z">
+          🔤 Chia đều theo A-Z
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-auto-divide-random" title="Xáo trộn ngẫu nhiên và chia đều">
+          🎲 Chia đều ngẫu nhiên
+        </button>
+      </div>
+    </div>
+
+    <!-- Bộ lọc & Thao tác hàng loạt theo lựa chọn -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input id="divide-search" type="text" placeholder="Tìm kiếm học sinh..." style="padding:6px 10px; font-size:.82rem; border:1px solid var(--line-strong); border-radius:6px; width:190px;">
+        <select id="divide-filter-group" style="padding:6px 10px; font-size:.82rem; border:1px solid var(--line-strong); border-radius:6px;">
+          <option value="">Tất cả tổ</option>
+          <option value="Tổ 1">Tổ 1</option>
+          <option value="Tổ 2">Tổ 2</option>
+          <option value="Tổ 3">Tổ 3</option>
+          <option value="Tổ 4">Tổ 4</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:6px; align-items:center; font-size:.82rem;">
+        <span style="color:var(--text-muted);">Gán học sinh đã chọn:</span>
+        <select id="bulk-target-group" style="padding:5px 8px; font-size:.8rem; border:1px solid var(--line-strong); border-radius:6px;"></select>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-apply-bulk-group" style="padding:5px 9px;">Áp dụng</button>
+      </div>
+    </div>
+
+    <!-- Bảng phân tổ từng học sinh -->
+    <div style="max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; margin-bottom:14px;">
+      <table class="data" style="font-size:.84rem; width:100%; margin:0;">
+        <thead style="position:sticky; top:0; background:var(--surface); z-index:2;">
+          <tr>
+            <th style="width:36px; text-align:center;"><input type="checkbox" id="check-all-divide"></th>
+            <th style="width:110px;">Mã HS</th>
+            <th>Họ và tên</th>
+            <th style="width:90px;">Tổ hiện tại</th>
+            <th style="width:150px;">Phân vào tổ mới</th>
+          </tr>
+        </thead>
+        <tbody id="divide-students-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="form-actions" style="justify-content:space-between; align-items:center; margin-top:14px;">
+      <div style="font-size:.8rem; color:var(--text-muted);" id="divide-changed-count">Chưa có thay đổi nào</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-ghost btn-sm" id="btn-cancel-divide-groups">Hủy</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-divide-groups">💾 Lưu phân chia tổ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MODAL CHỈNH SỬA VI PHẠM (GHI NHẦM) ============ -->
 <div id="modal-edit-violation" class="modal-overlay" hidden>
   <div class="edit-modal-card">

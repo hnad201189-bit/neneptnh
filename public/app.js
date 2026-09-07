@@ -236,6 +236,8 @@
   let assigningGroupId = null;
   let editingViolationId = null;
   let editingMeritId = null;
+  let temporaryDivideAssignments = {};
+  let changingGroupStudentId = null;
 
   function toList() {
     if (state.groups && state.groups.length) {
@@ -460,17 +462,21 @@
       .map((s) => {
         const c = scoreForStudent(s.id) || { score: 100, classification: "tot", violationCount: 0 };
         const detail = expandedStudent === s.id ? renderStudentDetail(s, c) : "";
+        const actionBtn = `<button class="btn btn-secondary btn-sm" data-change-student-group="${s.id}" title="Chuyển tổ cho học sinh này" style="font-size:0.75rem; padding:3px 8px; white-space:nowrap;">🔄 Chuyển tổ</button>`;
+
         return `<tr class="clickable" data-student="${s.id}">
-          <td class="cell-name"><div class="name-cell">${avatarHtml(s.fullName, groupName(s))}<span>${esc(s.fullName)}</span>${achievementBadge(c)}</div></td><td class="cell-muted">${groupName(s)}</td>
+          <td class="cell-name"><div class="name-cell">${avatarHtml(s.fullName, groupName(s))}<span>${esc(s.fullName)}</span>${achievementBadge(c)}</div></td>
+          <td><span class="pill pill-neutral" style="font-weight:600;">${groupName(s)}</span></td>
           <td class="tabular" style="font-weight:700;color:${cssVar(XL_COLOR_VAR[c.classification])}">${scoreSpan(c.score)}</td>
           <td><span class="pill ${XL_PILL[c.classification]}">${XL_LABEL[c.classification]}</span></td>
           <td class="tabular cell-muted">${c.violationCount}</td>
-        </tr>${detail ? `<tr class="accordion-row"><td colspan="5">${detail}</td></tr>` : ""}`;
+          <td>${actionBtn}</td>
+        </tr>${detail ? `<tr class="accordion-row"><td colspan="6">${detail}</td></tr>` : ""}`;
       })
       .join("");
     $("#table-students").innerHTML = `
-      <thead><tr><th>Họ và tên</th><th>Tổ</th><th>Điểm HK</th><th>Xếp loại</th><th>Số lỗi</th></tr></thead>
-      <tbody>${body || `<tr><td colspan="5" class="empty-note">Không tìm thấy học sinh phù hợp.</td></tr>`}</tbody>`;
+      <thead><tr><th>Họ và tên</th><th>Tổ</th><th>Điểm HK</th><th>Xếp loại</th><th>Số lỗi</th><th>Thao tác</th></tr></thead>
+      <tbody>${body || `<tr><td colspan="6" class="empty-note">Không tìm thấy học sinh phù hợp.</td></tr>`}</tbody>`;
   }
   function renderStudentDetail(s, c) {
     const vios = state.violations.filter((v) => v.studentId === s.id).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
@@ -1371,6 +1377,243 @@
       }
     });
 
+    // ================= CHUYỂN TỔ TỪNG HỌC SINH =================
+    function openChangeStudentGroupModal(studentId) {
+      if (!currentUser || !currentUser.isAdmin) {
+        $("#login-modal").hidden = false;
+        $("#login-error").textContent = "Vui lòng đăng nhập tài khoản Quản trị viên để chuyển tổ.";
+        $("#login-email").focus();
+        return;
+      }
+      const s = (state.students || []).find((x) => x.id === studentId);
+      if (!s) return;
+      changingGroupStudentId = s.id;
+      $("#csg-student-name").innerHTML = `Học sinh: <strong>${esc(s.fullName)}</strong> (${s.id}) — Tổ hiện tại: <span class="pill pill-neutral">${groupName(s)}</span>`;
+      const sel = $("#csg-group-select");
+      const groups = state.groups && state.groups.length ? state.groups : toList().map((name) => ({ id: `group-11b10-${name}`, name }));
+      sel.innerHTML = groups.map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join("");
+      const curGId = s.groupId || (s.group && s.group.id);
+      if (curGId) sel.value = curGId;
+      $("#csg-error").textContent = "";
+      $("#modal-change-student-group").hidden = false;
+    }
+
+    $("#btn-close-change-group").addEventListener("click", () => {
+      $("#modal-change-student-group").hidden = true;
+    });
+    $("#btn-cancel-change-group").addEventListener("click", () => {
+      $("#modal-change-student-group").hidden = true;
+    });
+    $("#btn-save-change-group").addEventListener("click", async () => {
+      if (!changingGroupStudentId) return;
+      const err = $("#csg-error");
+      err.textContent = "";
+      const groupId = $("#csg-group-select").value || null;
+      try {
+        await apiFetch(`/students/${changingGroupStudentId}/group`, {
+          method: "PATCH",
+          body: JSON.stringify({ groupId }),
+        });
+        $("#modal-change-student-group").hidden = true;
+        await loadPublicData();
+        renderAll();
+      } catch (e) {
+        err.textContent = e.message;
+      }
+    });
+
+    // ================= PHÂN CHIA TỔ TOÀN BỘ HỌC SINH =================
+    function openDivideGroupsModal() {
+      if (!currentUser || !currentUser.isAdmin) {
+        $("#login-modal").hidden = false;
+        $("#login-error").textContent = "Vui lòng đăng nhập tài khoản Quản trị viên (Admin) để phân chia tổ.";
+        $("#login-email").focus();
+        return;
+      }
+
+      temporaryDivideAssignments = {};
+      (state.students || []).forEach((s) => {
+        temporaryDivideAssignments[s.id] = s.groupId || (s.group && s.group.id) || "";
+      });
+
+      renderDivideModalContent();
+      $("#modal-divide-groups").hidden = false;
+    }
+
+    function renderDivideModalContent() {
+      const groups = state.groups && state.groups.length ? state.groups : toList().map((name) => ({ id: `group-11b10-${name}`, name }));
+
+      // Sĩ số từng tổ
+      const counts = {};
+      groups.forEach((g) => (counts[g.id] = 0));
+      let unassignedCount = 0;
+      Object.values(temporaryDivideAssignments).forEach((gId) => {
+        if (counts[gId] !== undefined) counts[gId]++;
+        else unassignedCount++;
+      });
+
+      $("#divide-groups-summary").innerHTML = groups
+        .map(
+          (g) => `
+          <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:8px 10px; text-align:center;">
+            <div style="font-weight:700; font-size:.84rem; color:var(--text-secondary);">${esc(g.name)}</div>
+            <div style="font-size:1.35rem; font-weight:800; font-family:var(--font-display); color:var(--text-primary); margin-top:2px;">
+              ${counts[g.id]} <span style="font-size:.74rem; font-weight:500; color:var(--text-muted);">em</span>
+            </div>
+          </div>`,
+        )
+        .join("") +
+        (unassignedCount > 0
+          ? `<div style="background:var(--accent-soft); border:1px solid var(--accent); border-radius:8px; padding:8px 10px; text-align:center;">
+              <div style="font-weight:700; font-size:.84rem; color:var(--accent);">Chưa phân tổ</div>
+              <div style="font-size:1.35rem; font-weight:800; font-family:var(--font-display); color:var(--accent); margin-top:2px;">
+                ${unassignedCount} <span style="font-size:.74rem; font-weight:500;">em</span>
+              </div>
+            </div>`
+          : "");
+
+      // Select gán hàng loạt
+      $("#bulk-target-group").innerHTML = groups.map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join("");
+
+      // Lọc học sinh
+      const filterGroup = $("#divide-filter-group").value;
+      const search = ($("#divide-search").value || "").toLowerCase().trim();
+
+      const filteredStudents = (state.students || []).filter((s) => {
+        const curGName = groupName(s);
+        if (filterGroup && curGName !== filterGroup) return false;
+        if (search && !s.fullName.toLowerCase().includes(search) && !s.id.toLowerCase().includes(search)) return false;
+        return true;
+      });
+
+      $("#divide-students-tbody").innerHTML = filteredStudents
+        .map((s) => {
+          const selectedGId = temporaryDivideAssignments[s.id] || "";
+          const groupOptions = groups
+            .map((g) => `<option value="${g.id}" ${selectedGId === g.id ? "selected" : ""}>${esc(g.name)}</option>`)
+            .join("");
+
+          return `
+          <tr>
+            <td style="text-align:center;"><input type="checkbox" class="divide-check-student" value="${s.id}"></td>
+            <td class="tabular cell-muted" style="font-size:.78rem;">${s.id}</td>
+            <td class="cell-name">${esc(s.fullName)}</td>
+            <td><span class="pill pill-neutral">${groupName(s)}</span></td>
+            <td>
+              <select class="divide-student-select" data-student-id="${s.id}" style="padding:4px 8px; font-size:.8rem; border:1px solid var(--line-strong); border-radius:6px; width:100%;">
+                ${groupOptions}
+              </select>
+            </td>
+          </tr>`;
+        })
+        .join("") || `<tr><td colspan="5" class="empty-note" style="text-align:center; padding:20px;">Không tìm thấy học sinh phù hợp.</td></tr>`;
+
+      // Cập nhật số thay đổi
+      let changed = 0;
+      (state.students || []).forEach((s) => {
+        const origGId = s.groupId || (s.group && s.group.id) || "";
+        if ((temporaryDivideAssignments[s.id] || "") !== origGId) changed++;
+      });
+      $("#divide-changed-count").innerHTML = changed > 0
+        ? `Đã thay đổi <strong style="color:var(--focus);">${changed}</strong> học sinh (chưa lưu)`
+        : `Chưa có thay đổi nào`;
+    }
+
+    $("#btn-open-divide-groups").addEventListener("click", openDivideGroupsModal);
+    const openFromUsersBtn = $("#btn-open-divide-groups-from-users");
+    if (openFromUsersBtn) openFromUsersBtn.addEventListener("click", openDivideGroupsModal);
+
+    $("#btn-close-divide-groups").addEventListener("click", () => {
+      $("#modal-divide-groups").hidden = true;
+    });
+    $("#btn-cancel-divide-groups").addEventListener("click", () => {
+      $("#modal-divide-groups").hidden = true;
+    });
+
+    // Chia đều theo A-Z
+    $("#btn-auto-divide-alpha").addEventListener("click", () => {
+      const groups = state.groups && state.groups.length ? state.groups : toList().map((name) => ({ id: `group-11b10-${name}`, name }));
+      const sorted = [...(state.students || [])].sort((a, b) => a.fullName.localeCompare(b.fullName, "vi"));
+      sorted.forEach((s, idx) => {
+        temporaryDivideAssignments[s.id] = groups[idx % groups.length].id;
+      });
+      renderDivideModalContent();
+    });
+
+    // Chia đều ngẫu nhiên
+    $("#btn-auto-divide-random").addEventListener("click", () => {
+      const groups = state.groups && state.groups.length ? state.groups : toList().map((name) => ({ id: `group-11b10-${name}`, name }));
+      const shuffled = [...(state.students || [])];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      shuffled.forEach((s, idx) => {
+        temporaryDivideAssignments[s.id] = groups[idx % groups.length].id;
+      });
+      renderDivideModalContent();
+    });
+
+    // Thay đổi tổ từng em trong bảng modal
+    $("#modal-divide-groups").addEventListener("change", (e) => {
+      const sel = e.target.closest(".divide-student-select");
+      if (sel) {
+        const sId = sel.getAttribute("data-student-id");
+        temporaryDivideAssignments[sId] = sel.value;
+        renderDivideModalContent();
+      }
+    });
+
+    // Chọn tất cả checkbox
+    $("#check-all-divide").addEventListener("change", (e) => {
+      $$(".divide-check-student").forEach((cb) => (cb.checked = e.target.checked));
+    });
+
+    // Áp dụng gán tổ hàng loạt
+    $("#btn-apply-bulk-group").addEventListener("click", () => {
+      const targetGId = $("#bulk-target-group").value;
+      if (!targetGId) return;
+      const checked = $$(".divide-check-student:checked").map((cb) => cb.value);
+      if (!checked.length) {
+        alert("Vui lòng tick chọn ít nhất một học sinh trong danh sách trước khi bấm Áp dụng.");
+        return;
+      }
+      checked.forEach((id) => {
+        temporaryDivideAssignments[id] = targetGId;
+      });
+      renderDivideModalContent();
+    });
+
+    $("#divide-search").addEventListener("input", renderDivideModalContent);
+    $("#divide-filter-group").addEventListener("change", renderDivideModalContent);
+
+    // Lưu phân chia tổ
+    $("#btn-save-divide-groups").addEventListener("click", async () => {
+      const btn = $("#btn-save-divide-groups");
+      btn.disabled = true;
+      btn.textContent = "Đang lưu…";
+      try {
+        const assignments = Object.entries(temporaryDivideAssignments).map(([studentId, groupId]) => ({
+          studentId,
+          groupId: groupId || null,
+        }));
+        await apiFetch("/students/divide-groups", {
+          method: "POST",
+          body: JSON.stringify({ assignments }),
+        });
+        $("#modal-divide-groups").hidden = true;
+        await loadPublicData();
+        if (currentUser && currentUser.isAdmin) await loadPrivateData();
+        renderAll();
+        alert("✅ Đã lưu phân chia tổ thành công cho toàn bộ học sinh!");
+      } catch (err) {
+        alert("Không lưu được: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Lưu phân chia tổ";
+      }
+    });
+
     // ---- Bộ lọc ----
     [
       ["#filter-student-to", "change", renderStudents],
@@ -1572,6 +1815,13 @@
         } catch (err) {
           alert("Không cập nhật được: " + err.message);
         }
+      }
+
+      const changeGrpBtn = e.target.closest("[data-change-student-group]");
+      if (changeGrpBtn) {
+        e.stopPropagation();
+        openChangeStudentGroupModal(changeGrpBtn.getAttribute("data-change-student-group"));
+        return;
       }
 
       const tr = e.target.closest("tr[data-student]");
