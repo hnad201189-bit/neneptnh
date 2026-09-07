@@ -1,10 +1,16 @@
 import { Body, Controller, Get, Param, Patch, UseGuards } from "@nestjs/common";
+import { IsOptional, IsString } from "class-validator";
 import { GroupsService } from "./groups.service";
 import { JwtAccessGuard } from "../auth/guards/jwt-access.guard";
 import { AdminGuard } from "../auth/guards/admin.guard";
 
 class UpdateLeaderDto {
+  @IsOptional()
+  @IsString()
   leaderStudentId?: string | null;
+
+  @IsOptional()
+  @IsString()
   studentId?: string | null;
 }
 

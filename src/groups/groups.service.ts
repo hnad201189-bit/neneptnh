@@ -83,6 +83,12 @@ export class GroupsService {
       );
 
       group.leaderStudentId = leaderStudentId;
+
+      const teamLeaderUser = await this.userRepo.findOne({ where: { groupId: group.id } });
+      if (teamLeaderUser) {
+        teamLeaderUser.fullName = `${student.fullName} - Tổ trưởng ${group.name}`;
+        await this.userRepo.save(teamLeaderUser);
+      }
     } else {
       group.leaderStudentId = null;
     }

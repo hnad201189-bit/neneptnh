@@ -27,15 +27,15 @@ export const OFFICIAL_TEAM_LEADERS = [
   {
     groupName: "Tổ 3",
     email: "to3.11b10@thpttnh.edu.vn",
-    fullName: "Nguyễn Hải Yến Nhi - Tổ trưởng Tổ 3",
-    leaderStudentId: "TNH25260433",
+    fullName: "Trần Bảo Thy - Tổ trưởng Tổ 3",
+    leaderStudentId: "TNH25260449",
     password: "ToTruong@123",
   },
   {
     groupName: "Tổ 4",
     email: "to4.11b10@thpttnh.edu.vn",
-    fullName: "Nguyễn Thu Thủy - Tổ trưởng Tổ 4",
-    leaderStudentId: "TNH25260445",
+    fullName: "Lê Thị Thanh Hiền - Tổ trưởng Tổ 4",
+    leaderStudentId: "TNH25260417",
     password: "ToTruong@123",
   },
 ];
