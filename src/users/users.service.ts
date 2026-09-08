@@ -163,7 +163,9 @@ export class UsersService {
         where: [{ name: leader.groupName }, { id: `group-11b10-${leader.groupName}` }],
       });
 
-      if (group && (!group.leaderStudentId || group.leaderStudentId !== leader.leaderStudentId)) {
+      // Chỉ gán tổ trưởng mặc định nếu tổ CHƯA có ai — không ép về lại người mặc định
+      // nếu Admin đã tự chỉ định người khác qua giao diện "Quản lý phân tổ".
+      if (group && !group.leaderStudentId) {
         group.leaderStudentId = leader.leaderStudentId;
         await this.groupRepo.save(group);
       }
@@ -175,8 +177,9 @@ export class UsersService {
       const permissions: Permission[] = ["record_violations", "record_merits"];
 
       if (existing) {
+        // Tài khoản đã tồn tại — chỉ đảm bảo tên/quyền đúng chuẩn, KHÔNG ép lại tổ
+        // (groupId) vì Admin có thể đã đổi tổ cho tài khoản này qua "Quản lý tài khoản".
         existing.fullName = leader.fullName;
-        existing.groupId = groupId;
         existing.permissions = permissions;
         existing.status = "active";
         await this.repo.save(existing);

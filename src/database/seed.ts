@@ -141,21 +141,38 @@ async function main() {
     groupIdByName[name] = id;
   }
 
+  // CHỈ tạo mới nếu học sinh chưa tồn tại — không đụng vào groupId của học sinh đã có,
+  // để không hoàn tác việc Admin chia lại tổ qua giao diện mỗi khi server khởi động lại.
   for (const [id, fullName, groupName] of STUDENTS) {
-    await studentRepo.upsert({ id, fullName, classId, groupId: groupIdByName[groupName] }, ["id"]);
+    const existing = await studentRepo.findOne({ where: { id } });
+    if (!existing) {
+      await studentRepo.save(studentRepo.create({ id, fullName, classId, groupId: groupIdByName[groupName] }));
+    }
   }
 
-  // Tổ trưởng — chỉ để hiển thị "ai là tổ trưởng tổ nào", GVCN chỉ định và có thể đổi
-  // trực tiếp trong dữ liệu bất kỳ lúc nào; không liên quan tới việc cấp tài khoản.
+  // Tổ trưởng mặc định — CHỈ gán nếu tổ đó chưa có tổ trưởng nào (leaderStudentId rỗng).
+  // Nếu Admin đã chỉ định qua giao diện, giữ nguyên, không ép về lại người mặc định.
   for (const [groupName, leaderId] of Object.entries(TO_TRUONG_MA_HS)) {
-    await groupRepo.update({ id: groupIdByName[groupName] }, { leaderStudentId: leaderId });
+    const group = await groupRepo.findOne({ where: { id: groupIdByName[groupName] } });
+    if (group && !group.leaderStudentId) {
+      group.leaderStudentId = leaderId;
+      await groupRepo.save(group);
+    }
   }
 
+  // Danh mục lỗi/khen thưởng — CHỈ tạo mới nếu chưa có, không ép "active" về true nữa,
+  // để không hồi sinh các mục Admin đã ẩn (xoá mềm) qua màn Danh mục lỗi.
   for (const [id, name, severity, points, icon] of VIOLATION_TYPES) {
-    await violationTypeRepo.upsert({ id, schoolId, name, severity, points, icon, active: true }, ["id"]);
+    const existing = await violationTypeRepo.findOne({ where: { id } });
+    if (!existing) {
+      await violationTypeRepo.save(violationTypeRepo.create({ id, schoolId, name, severity, points, icon, active: true }));
+    }
   }
   for (const [id, name, points] of MERIT_TYPES) {
-    await meritTypeRepo.upsert({ id, schoolId, name, points, active: true }, ["id"]);
+    const existing = await meritTypeRepo.findOne({ where: { id } });
+    if (!existing) {
+      await meritTypeRepo.save(meritTypeRepo.create({ id, schoolId, name, points, active: true }));
+    }
   }
 
   async function upsertUser(params: {
@@ -194,7 +211,9 @@ async function main() {
     permissions: [],
   });
 
-  // 4 tài khoản Tổ trưởng chính thức lớp 11B10
+  // 4 tài khoản Tổ trưởng chính thức lớp 11B10 — CHỈ tạo mới nếu email chưa tồn tại.
+  // Không ép lại mật khẩu/tổ/quyền mỗi lần khởi động — Admin tự quản lý các tài khoản
+  // này qua "Quản lý tài khoản" (đổi mật khẩu, đổi tổ…) và thay đổi đó phải được giữ lại.
   const OFFICIAL_LEADERS = [
     { email: "to1.11b10@thpttnh.edu.vn", name: "Đặng Thảo An - Tổ trưởng Tổ 1", group: "Tổ 1" },
     { email: "to2.11b10@thpttnh.edu.vn", name: "Nguyễn Thùy Lâm - Tổ trưởng Tổ 2", group: "Tổ 2" },
@@ -202,14 +221,18 @@ async function main() {
     { email: "to4.11b10@thpttnh.edu.vn", name: "Nguyễn Thu Thủy - Tổ trưởng Tổ 4", group: "Tổ 4" },
   ];
   for (const l of OFFICIAL_LEADERS) {
-    await upsertUser({
-      email: l.email,
-      fullName: l.name,
-      password: "ToTruong@123",
-      isAdmin: false,
-      permissions: ["record_violations", "record_merits"],
-      groupId: groupIdByName[l.group],
-    });
+    const email = l.email.toLowerCase().trim();
+    const existing = await userRepo.findOne({ where: { email } });
+    if (!existing) {
+      await upsertUser({
+        email,
+        fullName: l.name,
+        password: "ToTruong@123",
+        isAdmin: false,
+        permissions: ["record_violations", "record_merits"],
+        groupId: groupIdByName[l.group],
+      });
+    }
   }
 
   console.log("Xong. Đã tạo Admin và 4 tài khoản Tổ trưởng 11B10.");
