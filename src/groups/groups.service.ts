@@ -13,17 +13,10 @@ export class GroupsService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
-  async list() {
-    const groups = await this.groupRepo.find({
-      relations: {
-        leaderStudent: true,
-        students: true,
-        users: true,
-      },
-      order: { name: "ASC" },
-    });
-
-    return groups.map((g) => ({
+  // Dùng chung cho list() và findOne() — KHÔNG bao giờ trả entity User thô ra ngoài
+  // (chứa passwordHash/refreshTokenHash), chỉ trả các trường an toàn.
+  private toSafeGroup(g: Group) {
+    return {
       id: g.id,
       name: g.name,
       classId: g.classId,
@@ -45,7 +38,20 @@ export class GroupsService {
         fullName: u.fullName,
         status: u.status,
       })),
-    }));
+    };
+  }
+
+  async list() {
+    const groups = await this.groupRepo.find({
+      relations: {
+        leaderStudent: true,
+        students: true,
+        users: true,
+      },
+      order: { name: "ASC" },
+    });
+
+    return groups.map((g) => this.toSafeGroup(g));
   }
 
   async findOne(id: string) {
@@ -54,7 +60,7 @@ export class GroupsService {
       relations: { leaderStudent: true, students: true, users: true },
     });
     if (!group) throw new NotFoundException(`Không tìm thấy tổ: ${id}`);
-    return group;
+    return this.toSafeGroup(group);
   }
 
   async updateLeader(groupId: string, leaderStudentId: string | null) {
